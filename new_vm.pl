@@ -6,9 +6,8 @@
 # Author:      Jason Russler                                                  #
 # License:     None                                                           #
 # Support:     This script is NOT supported by Red Hat. In the event that     #
-#              this script stops performing for any reason, the customer is   #
-#              responsible for fixing/adapting the script or discontinuing    #
-#              its use in favor of manual provisioning.                       #
+#              this script stops performing for any reason, the you are       #
+#              responsible for fixing it or discontinuing use.                #
 #                                                                             #
 # Description: This tool will create a new virtual machine (from a template)  #
 #              and cobbler system profile, effectively "gluing" the Satellite #
@@ -24,7 +23,7 @@ use Getopt::Std;
 ##
 # Set default values for Vmware API
 # vCenter
-$ENV{VI_URL} = "https://nsc-diias-vc01.ba.ad.ssa.gov/sdk";
+$ENV{VI_URL} = "https://some.server.com/sdk";
 # User name [username]@[domain]
 #$ENV{VI_USERNAME} = '';
 # Password if you want it
@@ -40,7 +39,7 @@ my $default_datacenter = 0;
 my $debug=0;
 
 ##############################################################################
-# Generic functions
+# Helper functions
 
 ##
 # True if answer is yes.
@@ -125,6 +124,7 @@ sub chk_sat
     ( -d "/var/satellite" ) && return 1;
     return 0;
 }
+
 ##############################################################################
 # vCenter related functions
 
@@ -435,8 +435,6 @@ sub vm_from_template
     
     my $host_view = get_a_good_host_view($view);
     my $comp_res_view = Vim::get_view(mo_ref => $host_view->parent);
-
-    
     
     my $relocate_spec = VirtualMachineRelocateSpec->new(
             host => $host_view,
@@ -712,7 +710,8 @@ sub cobbler_setup
 
 ##
 # Just take an IP address from STDIN. Does some checking to make sure it's
-# a valid IP address. Parameters:
+# a valid IP address. Just joking! As long as it's a bunch of numbers separated
+# by three dots we're cool! Right? Parameters:
 # 1) string, text to show when asking for input
 sub input_ip_addr
 {
@@ -749,7 +748,6 @@ sub manual_iface_input
     if($debug) { print("enter manual_iface_input()\n"); }
     my $ip_addr = input_ip_addr("ip");
     
-    
     my $cmd = "cobbler system find --ip-address=$ip_addr";
     my $output = `$cmd`;
     chomp($output);
@@ -775,7 +773,6 @@ sub manual_iface_input
         if($addr) { push(@dns, $addr); }
         else { last; }
     }
-    
     
     return {"proto" => "static",
         "ip" => $ip_addr,
@@ -957,7 +954,6 @@ sub init_collect
     if(get_vm_by_name($vm_name, $datacenter)) {
         print("WARNING! A VM with this name already exists in this datacenter.\n");
         die("duplicate VM name");
-        
     }
     
     if(sysdef_name_exists($cobbler_name)) {
@@ -979,7 +975,7 @@ my $help = "
 
 ==============================================================================
 Hi! This script will guide you through the process of creating a _new_ system
-for provisioning via cobbler (Satellite) and Vmware. It will:
+for provisioning via cobbler (Satellite 5) and Vmware. It will:
 
  1 - Create a new VM in Vmware from the selected template.
  2 - Create a cobbler system definition profile that will provision the new
@@ -988,7 +984,8 @@ for provisioning via cobbler (Satellite) and Vmware. It will:
  
 In order for this thing to work, you:
 
- 1 - must be root on the Satellite server that will servicing the provision
+ 1 - must be root on the Satellite server that will be servicing the
+     provision - yucky, so much or organizations.
  2 - must not input a duplicate virtual machine name
  3 - must not input a duplicate cobbler system definition name
  4 - must not input network information (hostname, IP address) already used in
@@ -1073,7 +1070,7 @@ __END__
 
 =head1 NAME
 
-new_vm - Provisions a new VM with OS via Red Hat Satellite.
+new_vm - Provisions a new VM with OS via Red Hat Satellite 5 (Spacewalk)
          
 =head1 SYNOPSIS
 
